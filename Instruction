@@ -1,0 +1,133 @@
+Launch
+- /server: node server.js
+- /bot: node bot.js
+- /: ngrok http 5000
+
+Errors:
+- version Express must be 4
+- wrong ref Ngrok into bot.js
+
+-------------------------------------
+
+Отлично, иногда **чистый старт — это лучшее решение**, особенно когда куча всего наслаивается и непонятно, где что сломалось.
+
+Давай начнём *пошагово* — суперчисто и понятно. Вот **план нового проекта**:
+
+---
+
+### 📁 Структура:
+
+```
+rin/
+├── bot/            ← Telegraf бот
+├── server/         ← Express backend + WebApp
+├── webapp/         ← React-приложение
+```
+
+---
+
+### 🚀 Шаг за шагом:
+
+#### 1. Создание всех папок
+
+```bash
+mkdir rin && cd rin
+mkdir bot server webapp
+```
+
+#### 2. Установка Express в `server/`
+
+```bash
+cd server
+npm init -y
+npm install express
+```
+
+Создаём `server.js`:
+
+```js
+// server/server.js
+const express = require('express');
+const path = require('path');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.use(express.static(path.join(__dirname, '../webapp/build')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../webapp/build/index.html'));
+});
+
+app.listen(PORT, () => {
+  console.log(`Сервер запущен на http://localhost:${PORT}`);
+});
+```
+
+---
+
+#### 3. Создание React WebApp в `webapp/`
+
+```bash
+cd ../webapp
+npx create-react-app . --template cra-template
+```
+
+(можно без `--template`, если не нужен шаблон)
+
+---
+
+#### 4. Сборка React → build
+
+```bash
+npm run build
+```
+
+---
+
+#### 5. Telegraf бот
+
+```bash
+cd ../bot
+npm init -y
+npm install telegraf
+```
+
+Создаём `bot.js`:
+
+```js
+// bot/bot.js
+const { Telegraf } = require('telegraf');
+const bot = new Telegraf('ТОКЕН_ТВОЕГО_БОТА');
+
+bot.start((ctx) => {
+  ctx.reply('Открыть WebApp', {
+    reply_markup: {
+      keyboard: [
+        [
+          {
+            text: 'Открыть',
+            web_app: { url: 'https://твой-ngrok-ссылкой' }
+          }
+        ]
+      ],
+      resize_keyboard: true
+    }
+  });
+});
+
+bot.launch();
+console.log('Бот запущен');
+```
+
+---
+
+#### 6. Проброс Express через ngrok
+
+```bash
+ngrok http 5000
+```
+
+Копируешь ссылку вида `https://abcd1234.ngrok-free.app` — и вставляешь в бота.
+
+---
