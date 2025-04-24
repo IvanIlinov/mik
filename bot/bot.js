@@ -9,7 +9,7 @@ bot.start((ctx) => {
         [
           {
             text: 'Открыть',
-            web_app: { url: 'https://51b6-77-238-241-108.ngrok-free.app' }
+            web_app: { url: 'https://9dff-77-238-241-108.ngrok-free.app' }
           }
         ]
       ],
